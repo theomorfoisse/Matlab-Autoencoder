@@ -1,0 +1,86 @@
+%% Reconstruct Handwritten Digit Images Using Sparse Autoencoder
+%% Changing Code from one image to another.
+%Lundi 12 Mars, 11h.
+
+%% 
+% Load the training data. 
+
+load('digits.mat');
+tic
+
+N=20000;
+N2=0.7*N;
+n=3;
+I=I(:,:,1:N);
+J=reshape(I,28*28,N);
+XTrain=J(:,1:N2);
+
+%%
+% The training data is a 28*28-N matrix representing a synthetic image of a handwritten digit.  
+
+%% 
+% % Train an autoencoder with a hidden layer containing 25 neurons. 
+hiddenSize=25;
+autoenc=trainAutoencoder(XTrain,hiddenSize,...
+        'L2WeightRegularization',0.004,...
+        'SparsityRegularization',4,...
+        'SparsityProportion',0.15);  
+
+%% 
+% Load the test data. 
+XTest=J(:,N2+1:N); 
+
+%% 
+% Changing some parameters in the code.
+
+%code=[hiddenSize,N]
+code=encode(autoenc,XTest);
+code2=code;
+alpha=[0,0.2,0.4,0.6,0.8,1];
+   
+%%
+% Trouver les index des premiers chiffres voulus.
+
+L=L(N2+1:N);
+index=find(L==n);
+a=index(1);
+b=index(2);
+%% 
+% Reconstruct the test image data using the trained autoencoder, |autoenc|. 
+
+xReconstructedChange=zeros(28*28,0.3*N,length(alpha));
+for i=1:length(alpha)
+    code2(:,b)=alpha(i)*code(:,a)+(1-alpha(i))*code(:,b);
+    xReconstructed=decode(autoenc,code);
+    xReconstructedChange(:,:,i)=decode(autoenc,code2);
+end
+xReconstructed=reshape(xReconstructed,28,28,0.3*N);
+xReconstructedChange=reshape(xReconstructedChange,28,28,0.3*N,length(alpha));
+
+%%
+% View the difference by changing the code.
+
+figure;
+subplot(2,5,1);
+imagesc(I(:,:,a+N2));
+subplot(2,5,2);
+imagesc(I(:,:,b+N2));
+subplot(2,5,3);
+imagesc(xReconstructed(:,:,a));
+subplot(2,5,4);
+imagesc(xReconstructed(:,:,b));
+subplot(2,5,5);
+imagesc(xReconstructedChange(:,:,b,1));
+subplot(2,5,6);
+imagesc(xReconstructedChange(:,:,b,2));
+subplot(2,5,7);
+imagesc(xReconstructedChange(:,:,b,3));
+subplot(2,5,8);
+imagesc(xReconstructedChange(:,:,b,4));
+subplot(2,5,9);
+imagesc(xReconstructedChange(:,:,b,5));
+subplot(2,5,10);
+imagesc(xReconstructedChange(:,:,b,6));
+
+toc
+
