@@ -1,4 +1,5 @@
 %% Reconstruct Handwritten Digit Images Using Sparse Autoencoder  
+%% Compute the mean of the codes of several images of the same number.
 %Lundi 12 Mars, 11h.
 
 %% 
